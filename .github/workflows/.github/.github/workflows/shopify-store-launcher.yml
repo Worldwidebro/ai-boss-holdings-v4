@@ -1,0 +1,31 @@
+2. Shopify Store Factory Workflow
+name: Shopify Store Launcher
+on:
+  repository_dispatch:
+    types: ["launch_shopify_store"]
+  schedule:
+    - cron: "0 0 1 * *"  # Monthly fallback
+
+jobs:
+  launch-store:
+    runs-on: self-hosted
+    steps:
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v3
+      
+      - name: 🛠️ Setup Tools
+        run: |
+          pip install anythingllm chromadb
+          brew install docker
+
+      - name: 🚀 Launch Shopify Store
+        run: |
+          pinokio run tools/fellou-task.json
+
+      - name: 📁 Commit Store Config
+        run: |
+          git config --local user.email "github-actions@example.com"
+          git config --local user.name "GitHub Actions"
+          git add workflows/skywork-sync.n8n.json
+          git commit -m "New Shopify Store Launched"
+          git push origin main
