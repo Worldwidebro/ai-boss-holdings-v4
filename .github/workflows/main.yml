@@ -1,0 +1,54 @@
+1. Weekly SOP Sync + Compliance Audit Workflow
+name: SOP & Compliance Automation Engine
+on:
+  schedule:
+    - cron: "0 0 * * 1"  # Every Monday at midnight
+  workflow_dispatch: {}  # Manual trigger
+
+jobs:
+  update-sops-and-audit:
+    name: "🔄 Update SOPs + 🔍 Compliance Audit"
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      FELLOU_AI_KEY: ${{ secrets.FELLOU_AI_KEY }}
+      CHROMA_DB_PATH: "./chromadb"
+    
+    steps:
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: 📦 Install Dependencies
+        run: |
+          pip install anythingllm chromadb langchain openai pandas
+
+      - name: 📊 Run SOP Diagnostic
+        run: |
+          python agents/sop_analyzer.py > reports/sop_diagnostic.txt
+
+      - name: 🧠 Generate Updated SOP
+        run: |
+          anythingllm run --prompt-file prompts/sop_update_prompt.txt > updated_sop.md
+
+      - name: 📁 Commit Changes
+        run: |
+          git config --local user.email "github-actions@example.com"
+          git config --local user.name "GitHub Actions"
+          git add docs/sops/updated_sop.md
+          git commit -m "Weekly SOP Update + Compliance Audit"
+          git push origin main
+
+      - name: 🔐 Run Compliance Checker
+        run: |
+          python legal/compliance_checker.py --audit_target https://greenbeautystore.myshopify.com 
+
+      - name: 📈 Sync Metrics to Notion
+        run: |
+          python dashboards/update_dashboard.py --source metabase --destination notion
