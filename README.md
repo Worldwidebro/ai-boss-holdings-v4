@@ -202,3 +202,159 @@ Your README is now:
 - **Investor-Grade**: Metrics, revenue projections, legal entity  
 - **Technical-Grade**: Folder structure, agentic workflows, GitHub Actions  
 - **Legally Sound**: Compliance checks, encrypted vaults, LLC formation  
+ name: Weekly SOP Sync
+on:
+  schedule:
+    - cron: "0 0 * * 0"  # Every Sunday
+jobs:
+  update_sops:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Run SOP Diagnostic
+        run: python analyze_sop_usage.py > reports/diagnostic.txt
+      - name: Generate Updated SOP
+        run: anythingllm run --prompt-file prompts/sop_update_prompt.txt > updated_sop.md
+      - name: Commit Changes
+        run: |
+          git config --local user.email "github-actions@example.com"
+          git config --local user.name "GitHub Actions"
+          git add docs/sops/
+          git commit -m "Weekly SOP Update"
+          git push origin main
+
+        from crewai import Crew
+from tools import Proactor, Macaly
+
+tech_crew = Crew(
+    agents=[Proactor(strategist), Macaly(workflow_engineer)],
+    process="hierarchical",
+    verbose=True
+)
+
+if __name__ == "__main__":
+    task = Task(
+        objective="Generate business profile for pet supplies",
+        tools=["openai_gpt4", "perplexity_api"]
+    )
+    agent = Agent(task)
+    profile = agent.run()
+    print(profile)
+
+    # Shopify Store Launch SOP (7 Days)  
+
+## Day 1–3: SOP Licensing & Legal Setup  
+1. Generate SOP using Qwen2.5  
+2. Encrypt legal docs with VeraCrypt  
+3. Upload SOP to Glideapps  
+
+## Day 4–5: Agent Configuration & Memory System  
+1. Load SOP into ChromaDB  
+2. Configure Fellou.ai browser automation  
+3. Test agent memory recall  
+
+## Day 6–7: GitHub Repo Sync & Investor Dashboard  
+1. Commit SOP to GitHub  
+2. Schedule GitHub Actions for weekly updates  
+3. Update Notion investor dashboard
+
+#!/bin/bash
+
+# Step 1: Install Base Tools
+echo "🚀 Setting up base structure..."
+brew install git wget huggingface-cli ffmpeg openjdk
+brew install --cask docker veracrypt
+
+# Step 2: Initialize GitHub Repo
+echo "📦 Cloning GitHub repo..."
+gh repo clone Worldwidebro/ai-boss-holdings-v4
+cd ai-boss-holdings-v4
+
+#!/bin/bash
+
+# Step 1: Download Qwen2.5 model
+echo "🧠 Setting up local LLM..."
+mkdir -p ~/.anythingllm/models && cd "$_"
+wget https://huggingface.co/Qwen/Qwen2.5-7B-GGUF/resolve/main/qwen2.5-7b-q4_k_m.gguf 
+
+import chromadb
+from sentence_transformers import SentenceTransformer
+
+def generate_embedding(sop_path, output_path):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    with open(sop_path, 'r') as f:
+        sop_text = f.read()
+    embedding = model.encode(sop_text)
+    db = chromadb.PersistentClient(path="./chromadb")
+    collection = db.get_or_create_collection("sop_embeddings")
+    collection.add(
+        documents=[sop_text],
+        metadatas=[{"type": "Shopify"}],
+        ids=[f"sop_{sop_path.split('/')[-1].replace('.md', '')}"]
+    )
+
+if __name__ == "__main__":
+    generate_embedding("docs/sops/shopify-launch-sop.md", "chromadb/shopify-sop-embedding.pkl")
+
+    import vercept
+import chromadb
+
+def run_compliance_check():
+    print("🔍 Running compliance check...")
+    rules = vercept.extract_rules("legal/llc-agreement.pdf", rule_type="Wyoming LLC")
+    print("📜 Compliance rules extracted:", rules)
+
+    db = chromadb.PersistentClient(path="./chromadb")
+    collection = db.get_or_create_collection("compliance_rules")
+    collection.add(
+        documents=[str(rule) for rule in rules],
+        metadatas=[{"type": "LLC"} for _ in rules],
+        ids=[f"rule_{i}" for i in range(len(rules))]
+    )
+    print("✅ Compliance rules stored in ChromaDB")
+
+if __name__ == "__main__":
+    run_compliance_check()
+
+
+    import requests
+
+def update_dashboard(source, destination):
+    print(f"📊 Syncing {source} to {destination}")
+    # Example: Metabase → Notion sync
+    metabase_data = requests.get("https://metabase.example.com/api/card/1/query/json").json() 
+    notion_url = "https://notion.so/investor-dashboard" 
+    requests.post(notion_url, json=metabase_data)
+
+if __name__ == "__main__":
+    update_dashboard("Metabase", "Notion")
+
+    name: SOP CI/CD Pipeline
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    name: SOP Validation & Deployment
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Validate SOPs
+        run: |
+          for sop in $(git diff --cached --name-only | grep "sops/"); do
+            python -m json.tool "$sop" > /dev/null || { echo "Invalid JSON in $sop"; exit 1; }
+          done
+      - name: Deploy SOPs
+        run: |
+          git add sops/
+          git commit -m "Update SOPs"
+          git push origin main
+
+          OPENAI_API_KEY=your_openai_key
+FELLOU_AI_KEY=your_fellou_key
+SHOPIFY_ADMIN_API=your_shopify_api
+PERPLEXITY_API_KEY=your_perplexity_key
+GITHUB_TOKEN=your_github_token
