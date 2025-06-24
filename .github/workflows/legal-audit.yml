@@ -1,0 +1,31 @@
+name: Legal Compliance Audit
+on:
+  schedule:
+    - cron: "0 0 1 * *"  # Monthly
+  workflow_dispatch: {}
+
+jobs:
+  compliance-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Repo
+        uses: actions/checkout@v3
+      
+      - name: 🔐 Run Legal Audit
+        run: |
+          python legal/compliance_checker.py \
+            --document legal/llc-agreement.pdf \
+            --rule_type "Wyoming LLC, GDPR, FTC"
+      
+      - name: 📄 Generate Audit Report
+        run: |
+          vercept audit https://greenbeautystore.myshopify.com  --rules ISO_27001
+          echo "Audit Report: $(cat reports/compliance_results.txt)"
+
+      - name: 📤 Notify Investor Dashboard
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs')
+            const auditResults = fs.readFileSync('reports/compliance_results.txt', 'utf8')
+            console.log(`📝 Audit Results: ${auditResults}`)
